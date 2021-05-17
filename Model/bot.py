@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
 from datetime import datetime
 import random
+from keras.layers.recurrent import LSTM
 
 def TrainNeuralNetwork(test_size=0.3, random_state=1):
     #load dataset
@@ -78,50 +79,19 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
         "Real close": real_values["Real close"]
         })
 
-    print(r)
-
     #accuracy = model.evaluate(X, y)
     #print('Accuracy: %.2f' % (accuracy*100))
 
     r.sort_values("Timestamp", inplace=True)
-    r["Timestamp"] = [datetime.fromtimestamp(x) for x in r["Timestamp"]/1000] #convert tot real time
+    r["Timestamp"] = [datetime.fromtimestamp(x) for x in r["Timestamp"]/1000] #convert to real time
     r["ecart"] = abs(r["Estimation à t+1"] - r["Prix à t+1"]) #calculate ecart
     total = r["ecart"].mean()
 
     #Plot the data
-    r.plot("Timestamp", ["Prix à t", 'Prix à t+1', 'Estimation à t+1'])
+    #r.plot("Timestamp", ['Prix à t+1', 'Estimation à t+1'])
 
     #Show the plot
-    plt.show()
-    print(total)
+    #plt.show()
+    #print(total)
 
-
-
-    def strategybool(data):
-        resultat = []
-        for index, row in data.iterrows():
-            if bool(random.getrandbits(1)):
-                resultat.append(row["Prix à t+1"]/row["Prix à t"] * 100 - 100)
-            else:
-                resultat.append(0)
-        return resultat
-
-    def strategy(data):
-        resultat = []
-        for index, row in data.iterrows():
-            if row["Estimation à t+1"] - row["Prix à t"] > 100:
-                resultat.append(row["Prix à t+1"]/row["Prix à t"] * 100 - 100)
-            else:
-                resultat.append(0)
-        return resultat
-
-    argent = strategy(r)
-    argent2 = strategybool(r)
-
-    print(sum(argent))
-
-
-    plt.plot(r["Timestamp"].values, np.cumsum(argent), 'r')
-    plt.plot(r["Timestamp"].values, np.cumsum(argent2), 'b')
-    plt.show()
-
+    return r

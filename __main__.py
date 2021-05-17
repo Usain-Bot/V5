@@ -1,3 +1,2 @@
-import Model.bot
+import Model.strategy
 
-Model.bot.TrainNeuralNetwork()

@@ -8,3 +8,6 @@ SINCE = "500 days ago UTC"
 
 #Where to store csv files
 PATH_TO_STORAGE = "V5/Data/"
+
+#Wallet to start strategy
+WALLET = 100

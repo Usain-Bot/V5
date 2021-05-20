@@ -66,6 +66,9 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1):
     #load scaler
     scaler = joblib.load(cfg.PATH_TO_STORAGE+"/scaler.save") 
 
+    #get the index of last column of data to be able to invtransform
+    last_column = len(cfg.PAIRS)
+
     #Here we take first values of real_values because to test, we take first values of data too.
     try:
         #sometimes we have to take values to int(test_size*len(dataset)+1)
@@ -74,8 +77,8 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1):
         #Create a dataframe to see what happened
         r = pd.DataFrame({
         'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
-        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, 0),
-        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, 0),
+        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column),
+        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column),
         "Timestamp": real_values["Timestamp"],
         "Real open": real_values["Real open"],
         "Real close": real_values["Real close"]
@@ -89,8 +92,8 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1):
         #Create a dataframe to see what happened
         r = pd.DataFrame({
         'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
-        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, 0),
-        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, 0),
+        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column),
+        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column),
         "Timestamp": real_values["Timestamp"],
         "Real open": real_values["Real open"],
         "Real close": real_values["Real close"]

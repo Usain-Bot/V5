@@ -32,14 +32,16 @@ def evaluate_model(model):
 
     #separate values between "features" and "wanted" values
     X = dataset[:, :-1]
-    print(X)
     X = X.astype('float')
 
     # get model predictions
     predictions = model.predict(X)
-    #print(predictions)
-    predictions = DataPrepocessing.invTransform(predictions, scaler, 0)
-    print(predictions)
+
+    #get the index of last column of data to be able to invtransform
+    last_column = len(cfg.PAIRS)
+
+    predictions = DataPrepocessing.invTransform(predictions, scaler, last_column)
+
     timestamp = [datetime.fromtimestamp(x) for x in timestamp/1000] #convert to real time
 
     #plot wanted and predictions to compare

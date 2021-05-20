@@ -6,6 +6,7 @@ import numpy as np
 from Data import DataPrepocessing
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from datetime import datetime
+import joblib
 
 def evaluate_model(model):
     #Try to get data from .csv files
@@ -21,22 +22,27 @@ def evaluate_model(model):
     #split data into X input and Y output
     timestamp, y = dataset["Timestamp"].values, dataset["Wanted"].values 
     
+    #drop "timestamp" column to don't send it to model
     dataset.drop(["Timestamp"], axis=1, inplace=True)
 
-    # Normalize the data
-    scaler = model['scaler']
+    #load the scaler
+    scaler = joblib.load(cfg.PATH_TO_STORAGE+"/scaler.save")
+    #normalize with scaler
     dataset = scaler.transform(dataset)
 
+    #separate values between "features" and "wanted" values
     X = dataset[:, :-1]
     print(X)
     X = X.astype('float')
-    
-    predictions = model['model'].predict(X)
-    print(predictions)
+
+    # get model predictions
+    predictions = model.predict(X)
+    #print(predictions)
     predictions = DataPrepocessing.invTransform(predictions, scaler, 0)
     print(predictions)
     timestamp = [datetime.fromtimestamp(x) for x in timestamp/1000] #convert to real time
 
+    #plot wanted and predictions to compare
     plt.plot(timestamp, y, 'b', lw=0.5)
     plt.plot(timestamp, predictions, 'r', lw=0.5)
     plt.show()

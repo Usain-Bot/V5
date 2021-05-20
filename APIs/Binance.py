@@ -38,7 +38,7 @@ def GetData(pair, since):
 
     #Show the plot
     #pyplot.show()
-
+    
     return {'df': df, 'real values': real_df}
 
 

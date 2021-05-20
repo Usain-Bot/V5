@@ -2,7 +2,7 @@ import tensorflow
 import pandas as pd
 import sklearn
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, LSTM, Dropout
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -12,13 +12,16 @@ import numpy as np
 from datetime import datetime
 import random
 from keras.layers.recurrent import LSTM
+import joblib
+import config as cfg
 
 
-def TrainNeuralNetwork(test_size=0.3, random_state=1):
+def TrainNeuralNetwork(test_size=0.1, random_state=1):
     #load dataset
     data = DataPrepocessing.clean_data()
     dataset = data['df']
     
+
     #split data into X input and Y output
     X, y = dataset[:, :-1], dataset[:, -1]
     #print(dataset)
@@ -50,8 +53,6 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
     error = mean_absolute_error(y_test, yhat)
     print('MAE: %.3f' % error)
 
-    scaler = data['normalizer']
-
     #print(y_test)
     resultat = []
 
@@ -61,6 +62,9 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
 
     #shuffle the real values (timestamp, open and close)
     real_values = sklearn.utils.shuffle(data['real values'], random_state=random_state)
+
+    #load scaler
+    scaler = joblib.load(cfg.PATH_TO_STORAGE+"/scaler.save") 
 
     #Here we take first values of real_values because to test, we take first values of data too.
     try:
@@ -81,7 +85,8 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
     except ValueError:
         #sometimes we have to take values to int(test_size*len(dataset)+1)
         real_values = real_values[:int(test_size*len(dataset))].reset_index()
-
+        print(test_size*len(dataset), len(real_values))
+        #Create a dataframe to see what happened
         r = pd.DataFrame({
         'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
         'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, 0),
@@ -91,6 +96,7 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
         "Real close": real_values["Real close"]
         })
 
+    #calculate model accuracy
     accuracy = model.evaluate(X, y)
     print('Accuracy: %.2f' % (accuracy*100))
 
@@ -106,4 +112,4 @@ def TrainNeuralNetwork(test_size=0.3, random_state=1):
     plt.show()
     #print(total)
 
-    return {'model': model, 'scaler': scaler}
+    return model

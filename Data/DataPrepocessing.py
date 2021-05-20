@@ -12,6 +12,7 @@ import pytz
 import time
 import config as cfg
 import json
+import joblib
 
 pp = pprint.PrettyPrinter(indent=3)
 
@@ -39,11 +40,16 @@ def regenerate_data():
     data.drop([len(data)-2, len(data)-1], inplace=True) #delete last 2 row of our data (which are the younger one)
     data['Wanted'] = wanted_result[2:] #add it "wanted" column without first two results (which are the older one) to create a lag
 
+    #Create a scaler
+    scaler = MinMaxScaler().fit(data)
+
+    #Save the scaler to use it later
+    joblib.dump(scaler, cfg.PATH_TO_STORAGE+"/scaler.save") 
     
     #Save data in csv files
     '''Here we split data in two : first part is going to train/test, 2nd part is going to validation
     First part time : from the beginning to HOURS_TO_TEST ago
-    2nd part time : from HOURS_TO_TEST to now'''
+    2nd part time : from HOURS_TO_TEST ago to now'''
 
     #train/test
     data[:-cfg.HOURS_TO_TEST].to_csv(cfg.PATH_TO_STORAGE+"/data_IA.csv", index = False)
@@ -60,6 +66,7 @@ def clean_data():
     try:
         data = pd.read_csv(cfg.PATH_TO_STORAGE+"/data_IA.csv")
         real_df = pd.read_csv(cfg.PATH_TO_STORAGE+"/real_values.csv")
+        pd.read_csv(cfg.PATH_TO_STORAGE+"/validation_data.csv")
 
     #if not exist generate it with regenerate_data()
     except:
@@ -69,14 +76,14 @@ def clean_data():
         real_df = pd.read_csv(cfg.PATH_TO_STORAGE+"/real_values.csv")
 
     #Normalize data
-    scaler = MinMaxScaler().fit(data)
+    scaler = joblib.load(cfg.PATH_TO_STORAGE+"/scaler.save") 
     data = scaler.transform(data)
 
-    return {'df': data, 'real values': real_df, 'normalizer': scaler}
+    return {'df': data, 'real values': real_df}
 
 
 def invTransform(data, scaler, column=0):
-
+    
     '''This function allows to inverse normalization of a column.
     scaler.inverse_transform function needs to have same size of array when normalization was done
     so we add 0 except on the column we want
@@ -86,3 +93,7 @@ def invTransform(data, scaler, column=0):
     dummy[column] = data
     dummy = pd.DataFrame(scaler.inverse_transform(dummy), columns=dummy.columns)
     return dummy[column].values
+
+
+
+    

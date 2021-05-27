@@ -96,4 +96,12 @@ def invTransform(data, scaler, column=0):
 
 
 
-    
+def lstm_prepare(data, steps):
+    '''This function create an array with (samples, timesteps, features) 3D format
+    Careful earlier features need to be first rows !!!!! '''
+    result = []
+    for i in range(len(data)-steps):
+        result.append(data[i:i+steps])
+    result = np.array(result)
+    print(result.shape)
+    return result

@@ -33,6 +33,16 @@ def evaluate_model(model):
     #separate values between "features" and "wanted" values
     X = dataset[:, :-1]
     X = X.astype('float')
+    print(X)
+
+    steps = cfg.STEPS
+
+    X = DataPrepocessing.lstm_prepare(X[::-1], steps)
+    print(X)
+    timestamp = timestamp[:-steps]
+    timestamp = timestamp[::-1]
+    y = y[:-steps]
+    y = y[::-1]
 
     # get model predictions
     predictions = model.predict(X)
@@ -48,29 +58,5 @@ def evaluate_model(model):
     plt.plot(timestamp, y, 'b', lw=0.5)
     plt.plot(timestamp, predictions, 'r', lw=0.5)
     plt.show()
-
-
-def strategy(data):
-
-    '''First strategy is to buy when prediction is upper than now'''
-    resultat = []
-    wallet = cfg.WALLET
-    for index, row in data.iterrows():
-        if row["Estimation à t+1"] - row["Prix à t"] > 0:
-            resultat.append(row["Prix à t+1"]/row["Prix à t"] * wallet - wallet)
-        else:
-            resultat.append(0)
-        wallet += resultat[-1]
-    return resultat
-'''
-r = bot.TrainNeuralNetwork()
-argent = strategy(r)
-
-print(sum(argent))
-
-
-plt.plot(r["Timestamp"].values, np.cumsum(argent), 'r')
-plt.show()
-'''
 
 evaluate_model(bot.TrainNeuralNetwork())

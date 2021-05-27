@@ -11,57 +11,56 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
 from datetime import datetime
 import random
-from keras.layers.recurrent import LSTM
 import joblib
 import config as cfg
 
 
-def TrainNeuralNetwork(test_size=0.1, random_state=1):
+
+def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
     #load dataset
     data = DataPrepocessing.clean_data()
     dataset = data['df']
-    
 
     #split data into X input and Y output
     X, y = dataset[:, :-1], dataset[:, -1]
     #print(dataset)
+    X = DataPrepocessing.lstm_prepare(X[::-1], steps)
+
+    #delete last values of y because last values are not in X
+    y = y[:-steps]
+    y = y[::-1]
+
     X, y = X.astype('float'), y.astype('float')
-    n_features = X.shape[1]
-
-
-    #split data into training and test samples
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    n_features = X.shape[2]
 
     # define the keras model
     model = Sequential()
-    model.add(Dense(22, input_dim=n_features, activation='relu', kernel_initializer='he_normal'))
-    model.add(Dense(10, activation='relu', kernel_initializer='he_normal'))
-    model.add(Dense(6, activation='relu', kernel_initializer='he_normal'))
-    model.add(Dense(1, activation='sigmoid'))
-
+    model.add(LSTM(units=64, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=32, return_sequences=False, input_shape=(steps, n_features), dropout=0.2))
+    model.add(Dense(units=1))
 
     # compile the keras model
     model.compile(loss='mse', optimizer='adam')
 
     # fit the keras model on the dataset
-    model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=2)
+    model.fit(X, y, epochs=3, batch_size=10, verbose=2, shuffle=True)
 
     # evaluate on test set
-    yhat = model.predict(X_test)
+    yhat = model.predict(X)
 
-    yhat_train = model.predict(X_train)
-    error = mean_absolute_error(y_test, yhat)
+    error = mean_absolute_error(y, yhat)
     print('MAE: %.3f' % error)
 
-    #print(y_test)
+    #Create a dataframe with predicted values and wanted values at t+1
     resultat = []
 
-    for i in range(len(y_test)):
-        resultat.append([X_test[i][0], y_test[i], yhat[i][0]])
+    for i in range(len(y)):
+        resultat.append([X[i][0][0], y[i], yhat[i][0]])
     real_result = pd.DataFrame(resultat, columns=["Prix à t", "Prix à t+1", "Estimation t+1"])
 
-    #shuffle the real values (timestamp, open and close)
-    real_values = sklearn.utils.shuffle(data['real values'], random_state=random_state)
+    #Cut some values because for lstm last values are not take
+    real_values = data['real values'][::-1]
+    real_values = real_values[:-steps]
 
     #load scaler
     scaler = joblib.load(cfg.PATH_TO_STORAGE+"/scaler.save") 
@@ -69,35 +68,17 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1):
     #get the index of last column of data to be able to invtransform
     last_column = len(cfg.PAIRS)
 
-    #Here we take first values of real_values because to test, we take first values of data too.
-    try:
-        #sometimes we have to take values to int(test_size*len(dataset)+1)
-        real_values = real_values[:int(test_size*len(dataset)+1)].reset_index()
-
-        #Create a dataframe to see what happened
-        r = pd.DataFrame({
-        'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
+    #Create a dataframe to see what happened
+    r = pd.DataFrame({
+        'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0),
         'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column),
         'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column),
         "Timestamp": real_values["Timestamp"],
         "Real open": real_values["Real open"],
         "Real close": real_values["Real close"]
-        })
+    })
 
-        
-    except ValueError:
-        #sometimes we have to take values to int(test_size*len(dataset)+1)
-        real_values = real_values[:int(test_size*len(dataset))].reset_index()
-        print(test_size*len(dataset), len(real_values))
-        #Create a dataframe to see what happened
-        r = pd.DataFrame({
-        'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
-        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column),
-        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column),
-        "Timestamp": real_values["Timestamp"],
-        "Real open": real_values["Real open"],
-        "Real close": real_values["Real close"]
-        })
+    print(r)
 
     #calculate model accuracy
     accuracy = model.evaluate(X, y)

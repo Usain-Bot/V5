@@ -8,8 +8,10 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from datetime import datetime
 import joblib
 
+
 def evaluate_model(model):
     #Try to get data from .csv files
+
     try:
         dataset = pd.read_csv(cfg.PATH_TO_STORAGE+"/validation_data.csv")
 
@@ -57,6 +59,8 @@ def evaluate_model(model):
     #plot wanted and predictions to compare
     plt.plot(timestamp, y, 'b', lw=0.5)
     plt.plot(timestamp, predictions, 'r', lw=0.5)
+    plt.figure(2)
     plt.show()
+    plt.figure(3)
 
 evaluate_model(bot.TrainNeuralNetwork())

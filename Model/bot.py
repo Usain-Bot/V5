@@ -19,6 +19,7 @@ import config as cfg
 def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
     #load dataset
     data = DataPrepocessing.clean_data()
+
     dataset = data['df']
 
     #split data into X input and Y output
@@ -93,6 +94,7 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
     r.plot("Timestamp", ['Prix à t+1', 'Estimation à t+1'], lw=0.5)
 
     #Show the plot
+    plt.figure(1)
     plt.show()
     #print(total)
 

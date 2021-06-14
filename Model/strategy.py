@@ -52,15 +52,14 @@ def evaluate_model(model):
     #get the index of last column of data to be able to invtransform
     last_column = len(cfg.PAIRS)
 
-    predictions = DataPrepocessing.invTransform(predictions, scaler, last_column)
+    predictions = DataPrepocessing.invTransform(predictions, scaler, last_column*9)
 
     timestamp = [datetime.fromtimestamp(x) for x in timestamp/1000] #convert to real time
 
     #plot wanted and predictions to compare
     plt.plot(timestamp, y, 'b', lw=0.5)
     plt.plot(timestamp, predictions, 'r', lw=0.5)
-    plt.figure(2)
     plt.show()
-    plt.figure(3)
+
 
 evaluate_model(bot.TrainNeuralNetwork())

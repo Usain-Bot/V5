@@ -36,15 +36,19 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
 
     # define the keras model
     model = Sequential()
-    model.add(LSTM(units=64, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
-    model.add(LSTM(units=32, return_sequences=False, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=128, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=64, return_sequences=True, dropout=0.2))
+    model.add(LSTM(units=32, return_sequences=True, dropout=0.2))
+    model.add(LSTM(units=16, return_sequences=True, dropout=0.2))
+    model.add(LSTM(units=8, dropout=0.2))
+
     model.add(Dense(units=1))
 
     # compile the keras model
     model.compile(loss='mse', optimizer='adam')
 
     # fit the keras model on the dataset
-    model.fit(X, y, epochs=3, batch_size=10, verbose=2, shuffle=True)
+    model.fit(X, y, epochs=30, batch_size=100, verbose=1, shuffle=True)
 
     # evaluate on test set
     yhat = model.predict(X)
@@ -71,9 +75,9 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
 
     #Create a dataframe to see what happened
     r = pd.DataFrame({
-        'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0),
-        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column),
-        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column),
+        'Prix à t': DataPrepocessing.invTransform(real_result['Prix à t'], scaler, 0), 
+        'Prix à t+1': DataPrepocessing.invTransform(real_result['Prix à t+1'], scaler, last_column*9), 
+        'Estimation à t+1': DataPrepocessing.invTransform(real_result["Estimation t+1"], scaler, last_column*9), 
         "Timestamp": real_values["Timestamp"],
         "Real open": real_values["Real open"],
         "Real close": real_values["Real close"]
@@ -94,7 +98,6 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
     r.plot("Timestamp", ['Prix à t+1', 'Estimation à t+1'], lw=0.5)
 
     #Show the plot
-    plt.figure(1)
     plt.show()
     #print(total)
 

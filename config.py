@@ -1,10 +1,10 @@
 #In this file: you can set all variables
 
 #All pairs we want to get data from
-PAIRS = ['BTCUSDT', 'ETHUSDT']
+PAIRS = ['BATUSDT', 'ETHUSDT', 'BNBUSDT', 'BTCUSDT', 'LTCUSDT']
 
 #The time we want data from
-SINCE = "1500 days ago UTC"
+SINCE = "750 days ago UTC"
 
 #Where to store csv files
 PATH_TO_STORAGE = "V5/Data"
@@ -13,7 +13,7 @@ PATH_TO_STORAGE = "V5/Data"
 WALLET = 100
 
 #Hours to test data (will cut data in 2)
-HOURS_TO_TEST = 2400
+HOURS_TO_TEST = 750
 
 #Hours of features train before
-STEPS = 100
+STEPS = 150

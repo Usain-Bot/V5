@@ -13,7 +13,7 @@ PATH_TO_STORAGE = "V5/Data"
 WALLET = 100
 
 #Hours to test data (will cut data in 2)
-HOURS_TO_TEST = 750
+HOURS_TO_TEST = 900
 
 #Hours of features train before
-STEPS = 150
+STEPS = 10

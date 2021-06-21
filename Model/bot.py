@@ -28,27 +28,28 @@ def TrainNeuralNetwork(test_size=0.1, random_state=1, steps=cfg.STEPS):
     X = DataPrepocessing.lstm_prepare(X[::-1], steps)
 
     #delete last values of y because last values are not in X
-    y = y[:-steps]
     y = y[::-1]
+    y = y[:-steps]
 
     X, y = X.astype('float'), y.astype('float')
     n_features = X.shape[2]
 
     # define the keras model
     model = Sequential()
-    model.add(LSTM(units=128, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=1024, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=512, return_sequences=True, input_shape=(steps, n_features), dropout=0.2))
+    model.add(LSTM(units=256, return_sequences=True, dropout=0.2))
+    model.add(LSTM(units=128, return_sequences=True, dropout=0.2))
     model.add(LSTM(units=64, return_sequences=True, dropout=0.2))
     model.add(LSTM(units=32, return_sequences=True, dropout=0.2))
-    model.add(LSTM(units=16, return_sequences=True, dropout=0.2))
-    model.add(LSTM(units=8, dropout=0.2))
-
+    model.add(LSTM(units=16, return_sequences=False, dropout=0.2))
     model.add(Dense(units=1))
 
     # compile the keras model
     model.compile(loss='mse', optimizer='adam')
 
     # fit the keras model on the dataset
-    model.fit(X, y, epochs=30, batch_size=100, verbose=1, shuffle=True)
+    model.fit(X, y, epochs=1000, batch_size=200, verbose=1, shuffle=True)
 
     # evaluate on test set
     yhat = model.predict(X)

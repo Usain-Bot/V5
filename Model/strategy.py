@@ -41,10 +41,13 @@ def evaluate_model(model):
 
     X = DataPrepocessing.lstm_prepare(X[::-1], steps)
     print(X)
-    timestamp = timestamp[:-steps]
+    
     timestamp = timestamp[::-1]
-    y = y[:-steps]
+    timestamp = timestamp[:-steps]
+    
     y = y[::-1]
+    y = y[:-steps]
+
 
     # get model predictions
     predictions = model.predict(X)
